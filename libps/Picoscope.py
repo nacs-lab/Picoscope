@@ -31,7 +31,7 @@ class Picoscope:
         # Destructor that closes the PicoScope
         status = ps.ps2000aStop(self.hdl)
         assert_pico_ok(status)
-        print("Closing PicoScope " + self.serial)
+        print("Closing PicoScope " + str(self.serial))
         status = ps.ps2000aCloseUnit(self.hdl)
         assert_pico_ok(status)
 
@@ -68,7 +68,6 @@ class Picoscope:
         if chn not in self.chnInfo:
             raise Exception("Channel not set before setting trigger")
         else:
-            print(self.chnInfo)
             maxV = utils.VRangeToV(self.chnInfo[chn]["V_range"])
             if threshold >= maxV:
                 raise Exception("Threshold larger than maximum possible value")
@@ -135,6 +134,5 @@ class Picoscope:
         data = dict()
         data["time"] = np.linspace(0, ((cTotalSamples.value) - 1) * act_interval_ns * 1e-9, cTotalSamples.value).tolist()
         for key in buffers:
-            print(key)
             data[key] =(np.array(adc2mV(buffers[key]["Max"], buffers[key]["V_range"], maxADC)) / 1e3).tolist()
         return data
