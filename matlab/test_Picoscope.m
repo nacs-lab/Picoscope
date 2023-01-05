@@ -1,0 +1,15 @@
+ps = Picoscope.get('JZ260/0288');
+
+ps.setChn('A', 'dc', 5, 0);
+ps.setChn('B', 'dc', 5, 0);
+
+ps.setSimpleTrigger('A', 2, 'RISING', py.int(0), py.int(1000));
+
+ps.setTimeSettings(-0.2, 0.2, 0.001);
+
+res = ps.acquire();
+
+figure;
+plot(res.time, res.A);
+hold on;
+plot(res.time, res.B);
