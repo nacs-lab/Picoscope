@@ -23,15 +23,15 @@ classdef Picoscope < handle
                 pyglob = py.dict(pyargs('mat_srcpath', path));
             end
             try
-                py.exec('from Picoscope import Picoscope', pyglob);
+                py.exec('from libps import Picoscope', pyglob);
             catch
                 py.exec('import sys; sys.path.append(mat_srcpath)', pyglob);
-                py.exec('from Picoscope import Picoscope', pyglob);
+                py.exec('from libps import Picoscope', pyglob);
             end
             if exist('serial_str', 'var')
-                self.ps = py.eval('Picoscope(serial)', pyglob);
+                self.ps = py.eval('Picoscope.Picoscope(serial)', pyglob);
             else
-                self.ps = py.eval('Picoscope()', pyglob);
+                self.ps = py.eval('Picoscope.Picoscope()', pyglob);
             end
             self.serial = char(uint8(self.ps.serial));
             self.configured = 0;
@@ -90,8 +90,13 @@ classdef Picoscope < handle
            if ~self.configured
                error('Plesae configure the time settings with setTimeSettings');
            end
-           res = struct(self.ps.acquireBlock(self.preTrigSamples, self.postTrigSamples, self.timebase, self.interval_ns));
-           
+           raw = struct(self.ps.acquireBlock(self.preTrigSamples, self.postTrigSamples, self.timebase, self.interval_ns));
+           fnames = fieldnames(raw);
+           res = struct();
+           for i = 1:length(fnames)
+               this_name = fnames{i};
+               res.(this_name) = cellfun(@double, cell(raw.(this_name)));
+           end
         end
     end
 
@@ -100,6 +105,10 @@ classdef Picoscope < handle
     end
     methods(Static)
         function dropAll()
+            pic_keys = keys(Picoscope.cache);
+            for i = 1:length(pic_keys)
+                Picoscope.cache(pic_keys).ps = [];
+            end
             remove(Picoscope.cache, keys(Picoscope.cache));
         end
         function res = get(ser_str)

@@ -23,15 +23,15 @@ classdef Picoscope < handle
                 pyglob = py.dict(pyargs('mat_srcpath', path));
             end
             try
-                py.exec('from Picoscope import Picoscope', pyglob);
+                py.exec('from libps import Picoscope', pyglob);
             catch
                 py.exec('import sys; sys.path.append(mat_srcpath)', pyglob);
-                py.exec('from Picoscope import Picoscope', pyglob);
+                py.exec('from libps import Picoscope', pyglob);
             end
             if exist('serial_str', 'var')
-                self.ps = py.eval('Picoscope(serial)', pyglob);
+                self.ps = py.eval('Picoscope.Picoscope(serial)', pyglob);
             else
-                self.ps = py.eval('Picoscope()', pyglob);
+                self.ps = py.eval('Picoscope.Picoscope()', pyglob);
             end
             self.serial = char(uint8(self.ps.serial));
             self.configured = 0;
@@ -105,6 +105,12 @@ classdef Picoscope < handle
     end
     methods(Static)
         function dropAll()
+            cache = Picoscope.cache;
+            pic_keys = keys(cache);
+            for i = 1:length(pic_keys)
+                val = cache(pic_keys{i});
+                val.ps = [];
+            end
             remove(Picoscope.cache, keys(Picoscope.cache));
         end
         function res = get(ser_str)
